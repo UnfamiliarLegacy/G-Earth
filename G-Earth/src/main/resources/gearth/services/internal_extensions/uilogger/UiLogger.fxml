@@ -78,8 +78,9 @@
                      <RadioMenuItem fx:id="chkAntiSpam_ultra" mnemonicParsing="false" text="Ultra" toggleGroup="$antispam" />
                  </items>
                </Menu>
-               <CheckMenuItem fx:id="chkSkipBigPackets" mnemonicParsing="false" selected="true" text="Skip big packets" />
-               <MenuItem fx:id="menuItem_exportAll" mnemonicParsing="false" onAction="#exportAll" text="Export all" />
+                <CheckMenuItem fx:id="chkSkipBigPackets" mnemonicParsing="false" selected="true" text="Skip big packets" />
+                <CheckMenuItem fx:id="chkShowExtensionPackets" mnemonicParsing="false" selected="true" text="Show packets sent by extensions" />
+                <MenuItem fx:id="menuItem_exportAll" mnemonicParsing="false" onAction="#exportAll" text="Export all" />
            </items>
          </Menu>
         </MenuBar>

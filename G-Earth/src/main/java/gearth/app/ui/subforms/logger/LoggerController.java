@@ -68,8 +68,9 @@ public class LoggerController extends SubForm {
             if (message.isBlocked()) types |= PacketLogger.MESSAGE_TYPE.BLOCKED.getValue();
             if (message.getPacket().isReplaced()) types |= PacketLogger.MESSAGE_TYPE.REPLACED.getValue();
             if (cbx_showAdditional.isSelected()) types |= PacketLogger.MESSAGE_TYPE.SHOW_ADDITIONAL_DATA.getValue();
+            if (message.getExtensionName() != null) types |= PacketLogger.MESSAGE_TYPE.EXTENSION.getValue();
 
-            packetLogger.appendMessage(message.getPacket(), types);
+            packetLogger.appendMessage(message.getPacket(), types, message.getExtensionName());
 
             if (cbx_showstruct.isSelected() && message.getPacket().length() < packetLimit) {
                 packetLogger.appendStructure(message.getPacket(), message.getDestination());

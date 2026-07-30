@@ -16,7 +16,8 @@ public interface PacketLogger {
         REPLACED(8),
         INJECTED(16),
         SKIPPED(32), // don't display the whole packet
-        SHOW_ADDITIONAL_DATA(64);
+        SHOW_ADDITIONAL_DATA(64),
+        EXTENSION(128);
 
         private int val;
         MESSAGE_TYPE(int val)
@@ -34,6 +35,7 @@ public interface PacketLogger {
 
     void appendSplitLine();
     void appendMessage(HPacket packet, int types);
+    void appendMessage(HPacket packet, int types, String extensionName);
     void appendStructure(HPacket packet, HMessage.Direction direction);
 
 }

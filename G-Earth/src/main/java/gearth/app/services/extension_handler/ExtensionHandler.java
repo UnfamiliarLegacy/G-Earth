@@ -4,6 +4,7 @@ import gearth.app.GEarth;
 import gearth.misc.HostInfo;
 import gearth.misc.listenerpattern.Observable;
 import gearth.app.protocol.HConnection;
+import gearth.app.protocol.TrafficListener;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import gearth.protocol.HPacketFormat;
@@ -205,6 +206,10 @@ public class ExtensionHandler {
 
                     @Override
                     public void sendMessage(HMessage.Direction direction, HPacket packet) {
+                        HMessage extMessage = new HMessage(packet, direction, hConnection.getCurrentIndex());
+                        extMessage.setExtensionName(extension.getTitle());
+                        hConnection.notifyTrafficListeners(TrafficListener.AFTER_MODIFICATION, extMessage);
+
                         boolean success;
                         if (direction == HMessage.Direction.TOCLIENT) {
                             success = hConnection.sendToClient(packet);

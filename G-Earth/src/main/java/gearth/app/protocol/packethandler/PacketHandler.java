@@ -12,6 +12,11 @@ public abstract class PacketHandler {
     private final ExtensionHandler extensionHandler;
     private final Observable<TrafficListener>[] trafficObservables; //get notified on packet send
     protected volatile int currentIndex = 0;
+
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
+
     protected final Object sendLock = new Object();
     protected final Object flushLock = new Object();
 

@@ -5,6 +5,9 @@ import gearth.app.protocol.HConnection;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Jonas on 04/04/18.
  */
@@ -30,14 +33,18 @@ class SimpleTerminalLogger implements PacketLogger {
 
     @Override
     public void appendMessage(HPacket packet, int types) {
+        appendMessage(packet, types, null);
+    }
+
+    @Override
+    public void appendMessage(HPacket packet, int types, String extensionName) {
         StringBuilder output = new StringBuilder();
 
-        if ((types & MESSAGE_TYPE.BLOCKED.getValue()) != 0) {
-            output.append("[BLOCKED] ");
-        }
-        else if ((types & MESSAGE_TYPE.REPLACED.getValue()) != 0) {
-            output.append("[REPLACED] ");
-        }
+        List<String> tags = new ArrayList<>();
+        if ((types & MESSAGE_TYPE.BLOCKED.getValue()) != 0) tags.add("[BLOCKED]");
+        if ((types & MESSAGE_TYPE.REPLACED.getValue()) != 0) tags.add("[REPLACED]");
+        if ((types & MESSAGE_TYPE.EXTENSION.getValue()) != 0 && extensionName != null) tags.add("[Extension : " + extensionName + "]");
+        if (!tags.isEmpty()) output.append(String.join(" ", tags)).append(" ");
 
         output.append(
                 (types & MESSAGE_TYPE.INCOMING.getValue()) != 0 ?
