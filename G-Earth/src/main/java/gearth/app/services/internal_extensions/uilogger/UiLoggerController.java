@@ -72,6 +72,7 @@ public class UiLoggerController implements Initializable {
     public CheckMenuItem chkReprLegacy;
     public CheckMenuItem chkReprHex;
     public CheckMenuItem chkReprRawHex;
+    public CheckMenuItem chkShowExtensionPackets;
     public MenuItem menuItem_clear, menuItem_exportAll;
 
     private Map<Integer, LinkedList<Long>> filterTimestamps = new HashMap<>();
@@ -147,7 +148,8 @@ public class UiLoggerController implements Initializable {
                 chkSkipBigPackets, chkMessageName, chkMessageHash, chkMessageId,
                 chkOpenOnConnect, chkResetOnConnect, chkHideOnDisconnect, chkResetOnDisconnect,
                 chkAntiSpam_none, chkAntiSpam_low, chkAntiSpam_medium, chkAntiSpam_high, chkAntiSpam_ultra,
-                chkTimestamp, chkReprHex, chkReprLegacy, chkReprRawHex
+                chkTimestamp, chkReprHex, chkReprLegacy, chkReprRawHex,
+                chkShowExtensionPackets
         ));
         loadAllMenuItems();
 
@@ -216,10 +218,13 @@ public class UiLoggerController implements Initializable {
         return list.size() >= threshold;
     }
 
-    public void appendMessage(HPacket packet, int types) {
+    public void appendMessage(HPacket packet, int types, String extensionName) {
         boolean isBlocked = (types & PacketLogger.MESSAGE_TYPE.BLOCKED.getValue()) != 0;
         boolean isReplaced = (types & PacketLogger.MESSAGE_TYPE.REPLACED.getValue()) != 0;
         boolean isIncoming = (types & PacketLogger.MESSAGE_TYPE.INCOMING.getValue()) != 0;
+        boolean isExtension = (types & PacketLogger.MESSAGE_TYPE.EXTENSION.getValue()) != 0;
+
+        if (isExtension && !chkShowExtensionPackets.isSelected()) return;
 
         if (isIncoming && !isBlocked && !isReplaced) {
             boolean filter = checkFilter(packet);
@@ -274,8 +279,13 @@ public class UiLoggerController implements Initializable {
             elements.add(new Element("\n", ""));
         }
 
-        if (isBlocked) elements.add(new Element(String.format("[%s]\n", LanguageBundle.get("ext.logger.element.blocked")), "blocked"));
-        else if (isReplaced) elements.add(new Element(String.format("[%s]\n", LanguageBundle.get("ext.logger.element.replaced")), "replaced"));
+        addTag(elements, isBlocked, String.format("[%s]", LanguageBundle.get("ext.logger.element.blocked")), "blocked");
+        addTag(elements, isReplaced, String.format("[%s]", LanguageBundle.get("ext.logger.element.replaced")), "replaced");
+        addTag(elements, isExtension && extensionName != null, String.format("[Extension : %s]", extensionName), "extension");
+        if (!elements.isEmpty() && !elements.get(elements.size() - 1).text.equals("\n")
+                && !elements.get(elements.size() - 1).text.equals("")) {
+            elements.add(new Element("\n", ""));
+        }
 
         boolean reprLegacy = chkReprLegacy.isSelected();
         boolean reprHex = chkReprHex.isSelected();
@@ -384,6 +394,17 @@ public class UiLoggerController implements Initializable {
         });
     }
 
+    private void addTag(ArrayList<Element> elements, boolean condition, String text, String cssClass) {
+        if (!condition) return;
+        if (!elements.isEmpty()) {
+            String last = elements.get(elements.size() - 1).text;
+            if (!last.endsWith("\n") && !last.equals("")) {
+                elements.add(new Element(" ", ""));
+            }
+        }
+        elements.add(new Element(text, cssClass));
+    }
+
     public void toggleAlwaysOnTop(ActionEvent actionEvent) {
         stage.setAlwaysOnTop(chkAlwaysOnTop.isSelected());
     }
@@ -490,6 +511,8 @@ public class UiLoggerController implements Initializable {
         chkAntiSpam_ultra.textProperty().bind(new TranslatableString("%s", "ext.logger.menu.packets.antispam.ultra"));
 
         chkSkipBigPackets.textProperty().bind(new TranslatableString("%s", "ext.logger.menu.packets.skipbig"));
+
+        chkShowExtensionPackets.textProperty().bind(new TranslatableString("%s", "ext.logger.menu.packets.showextensionsent"));
 
         menuItem_exportAll.textProperty().bind(new TranslatableString("%s", "ext.logger.menu.packets.exportall"));
 

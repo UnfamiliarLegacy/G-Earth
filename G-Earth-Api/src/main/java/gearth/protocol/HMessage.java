@@ -14,6 +14,7 @@ public class HMessage implements StringifyAble {
     private int index;
 
     private boolean isBlocked;
+    private String extensionName;
 
     public HMessage(HPacketFormat format, String fromString) {
         // A little bit hacky to get the correct packet class inside constructFromString.
@@ -41,6 +42,13 @@ public class HMessage implements StringifyAble {
     }
     public boolean isBlocked() {
         return isBlocked;
+    }
+
+    public void setExtensionName(String extensionName) {
+        this.extensionName = extensionName;
+    }
+    public String getExtensionName() {
+        return extensionName;
     }
 
     public HPacket getPacket() {
@@ -76,6 +84,7 @@ public class HMessage implements StringifyAble {
         this.index = message.getIndex();
         this.direction = message.getDestination();
         this.hPacket = message.getPacket().copy();
+        this.extensionName = message.extensionName;
     }
 
     @Override

@@ -11,6 +11,10 @@
     -fx-fill: #ffff00;
 }
 
+.extension {
+    -fx-fill: #00ff88;
+}
+
 .timestamp {
     -fx-fill: #ffffff;
 }

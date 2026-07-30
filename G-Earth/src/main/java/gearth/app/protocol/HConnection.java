@@ -9,6 +9,7 @@ import gearth.app.protocol.connection.proxy.ProxyProviderFactory;
 import gearth.app.protocol.connection.proxy.flash.unix.LinuxRawIpFlashProxyProvider;
 import gearth.app.protocol.connection.proxy.nitro.NitroProxyProvider;
 import gearth.app.protocol.connection.proxy.unity.UnityProxyProvider;
+import gearth.app.protocol.packethandler.PacketHandler;
 import gearth.app.services.extension_handler.ExtensionHandler;
 import gearth.misc.listenerpattern.Observable;
 import gearth.protocol.HMessage;
@@ -140,6 +141,22 @@ public class HConnection {
 
     public Observable<TrafficListener>[] getTrafficObservables() {
         return trafficObservables;
+    }
+
+    public int getCurrentIndex() {
+        HProxy proxy = this.proxy;
+        if (proxy == null) return 0;
+        PacketHandler inHandler = proxy.getInHandler();
+        if (inHandler != null) return inHandler.getCurrentIndex();
+        return 0;
+    }
+
+    public void notifyTrafficListeners(int order, HMessage message) {
+        ((Observable<TrafficListener>) trafficObservables[order]).fireEvent(listener -> {
+            message.getPacket().resetReadIndex();
+            listener.onCapture(message);
+        });
+        message.getPacket().resetReadIndex();
     }
 
     public int getServerPort() {

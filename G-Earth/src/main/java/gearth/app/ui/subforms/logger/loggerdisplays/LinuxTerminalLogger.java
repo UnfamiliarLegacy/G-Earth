@@ -3,7 +3,9 @@ package gearth.app.ui.subforms.logger.loggerdisplays;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,14 +31,18 @@ class LinuxTerminalLogger extends SimpleTerminalLogger {
 
     @Override
     public void appendMessage(HPacket packet, int types) {
+        appendMessage(packet, types, null);
+    }
+
+    @Override
+    public void appendMessage(HPacket packet, int types, String extensionName) {
         StringBuilder output = new StringBuilder();
 
-        if ((types & MESSAGE_TYPE.BLOCKED.getValue()) != 0) {
-            output.append(colorizePackets.get("BLOCKED")).append("[BLOCKED] ");
-        }
-        else if ((types & MESSAGE_TYPE.REPLACED.getValue()) != 0) {
-            output.append(colorizePackets.get("REPLACED")).append("[REPLACED] ");
-        }
+        List<String> tags = new ArrayList<>();
+        if ((types & MESSAGE_TYPE.BLOCKED.getValue()) != 0) tags.add(colorizePackets.get("BLOCKED") + "[BLOCKED]");
+        if ((types & MESSAGE_TYPE.REPLACED.getValue()) != 0) tags.add(colorizePackets.get("REPLACED") + "[REPLACED]");
+        if ((types & MESSAGE_TYPE.EXTENSION.getValue()) != 0 && extensionName != null) tags.add(colorizePackets.get("INJECTED") + "[Extension : " + extensionName + "]");
+        if (!tags.isEmpty()) output.append(String.join(" ", tags)).append(" ");
 
         output.append(
                 (types & MESSAGE_TYPE.INCOMING.getValue()) != 0 ?

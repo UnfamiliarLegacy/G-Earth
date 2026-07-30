@@ -61,7 +61,12 @@ public class UiLogger extends ExtensionForm implements PacketLogger {
 
     @Override
     public void appendMessage(HPacket packet, int types) {
-        controller.appendMessage(packet, types);
+        controller.appendMessage(packet, types, null);
+    }
+
+    @Override
+    public void appendMessage(HPacket packet, int types, String extensionName) {
+        controller.appendMessage(packet, types, extensionName);
     }
 
     @Override
