@@ -5,7 +5,10 @@ import gearth.app.misc.Cacher;
 import gearth.protocol.connection.HClient;
 import gearth.app.protocol.connection.HState;
 import gearth.app.protocol.connection.proxy.ProxyProviderFactory;
+import gearth.app.protocol.connection.proxy.unity.UnityLaunchMode;
 import gearth.services.Constants;
+import gearth.app.ui.titlebar.TitleBarAlert;
+import gearth.app.ui.translations.LanguageBundle;
 import gearth.app.ui.translations.TranslatableString;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -13,12 +16,15 @@ import javafx.scene.control.*;
 import gearth.app.protocol.HConnection;
 import gearth.app.ui.SubForm;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class ConnectionController extends SubForm {
 
@@ -257,7 +263,11 @@ public class ConnectionController extends SubForm {
             }
             else if (connectMode.equals("unity")) {
                 Platform.runLater(() -> rd_unity.setSelected(true));
-                getHConnection().startUnity();
+                new Thread(() -> getHConnection().startUnity(UnityLaunchMode.WEB), "unity-autoconnect").start();
+            }
+            else if (connectMode.equals("unity-build")) {
+                Platform.runLater(() -> rd_unity.setSelected(true));
+                new Thread(() -> getHConnection().startUnity(UnityLaunchMode.BUILD), "unity-autoconnect").start();
             }
             else if (connectMode.equals("nitro")) {
                 Platform.runLater(() -> rd_nitro.setSelected(true));
@@ -281,7 +291,12 @@ public class ConnectionController extends SubForm {
                 } else if (isClientMode(HClient.SHOCKWAVE)) {
                     getHConnection().start(HClient.SHOCKWAVE);
                 } else if (isClientMode(HClient.UNITY)) {
-                    getHConnection().startUnity();
+                    UnityLaunchMode mode = askUnityMode();
+                    if (mode == null) {
+                        Platform.runLater(this::updateInputUI);
+                        return;
+                    }
+                    getHConnection().startUnity(mode);
                 } else if (isClientMode(HClient.NITRO)) {
                     getHConnection().startNitro();
                 }
@@ -294,6 +309,46 @@ public class ConnectionController extends SubForm {
         }
         else {
             getHConnection().abort();
+        }
+    }
+
+    private UnityLaunchMode askUnityMode() {
+        CompletableFuture<UnityLaunchMode> choice = new CompletableFuture<>();
+
+        Platform.runLater(() -> {
+            ButtonType web = new ButtonType(LanguageBundle.get("tab.connection.client.unity.choice.web"));
+            ButtonType build = new ButtonType(LanguageBundle.get("tab.connection.client.unity.choice.build"));
+            ButtonType cancel = new ButtonType(LanguageBundle.get("tab.connection.button.abort"), ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "", web, build, cancel);
+            alert.setTitle(LanguageBundle.get("tab.connection.client.unity.choice.title"));
+            alert.setHeaderText(null);
+
+            Label content = new Label(LanguageBundle.get("tab.connection.client.unity.choice.content"));
+            content.setWrapText(true);
+            alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            alert.getDialogPane().setPrefWidth(420);
+            alert.getDialogPane().setContent(content);
+
+            try {
+                Optional<ButtonType> result = TitleBarAlert.create(alert).showAlertAndWait();
+                if (result.isPresent() && result.get() == web) {
+                    choice.complete(UnityLaunchMode.WEB);
+                } else if (result.isPresent() && result.get() == build) {
+                    choice.complete(UnityLaunchMode.BUILD);
+                } else {
+                    choice.complete(null);
+                }
+            } catch (Exception e) {
+                choice.complete(null);
+            }
+        });
+
+        try {
+            return choice.get();
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
     }
 

@@ -1,12 +1,12 @@
 package gearth.app.misc;
 
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -47,10 +47,14 @@ public class ConfirmationDialog {
         });
         alert.getDialogPane().getButtonTypes().addAll(buttonTypes);
         alert.getDialogPane().setContentText(message);
-        // Fool the dialog into thinking there is some expandable content
-        // a Group won't take up any space if it has no children
-        alert.getDialogPane().setExpandableContent(new Group());
-        alert.getDialogPane().setExpanded(true);
+        // fix bounce
+        Region expandableSpacer = new Region();
+        expandableSpacer.setMinSize(0, 0);
+        expandableSpacer.setPrefSize(0, 0);
+        expandableSpacer.setMaxSize(0, 0);
+        expandableSpacer.setManaged(false);
+        alert.getDialogPane().setExpandableContent(expandableSpacer);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         // Reset the dialog graphic using the default style
         alert.getDialogPane().setGraphic(graphic);
         alert.setTitle(title);

@@ -23,11 +23,11 @@ public class GUnityFileServer extends HttpProxyInterceptInitializer
 
     private static final String HABBO_HOST = "images.habbo.com";
     private static final List<String> HABBO_ASSETS = List.of(
-            "/habbo-webgl-clients/.*?/WebGL/habbo2020-global-prod/StreamingAssets/Version.txt",
-            "/habbo-webgl-clients/.*?/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.data.gz",
-            "/habbo-webgl-clients/.*?/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.wasm.gz",
-            "/habbo-webgl-clients/.*?/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.framework.js.gz",
-            "/habbo-webgl-clients/.*?/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.loader.js"
+            ".*/WebGL/habbo2020-global-prod/StreamingAssets/Version.txt",
+            ".*/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.data.gz",
+            ".*/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.wasm.gz",
+            ".*/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.framework.js.gz",
+            ".*/WebGL/habbo2020-global-prod/Build/habbo2020-global-prod.loader.js"
     );
 
     private static final UnityWebModifier modifier = new UnityWebModifier();
@@ -79,7 +79,7 @@ public class GUnityFileServer extends HttpProxyInterceptInitializer
 
                 httpResponse.headers().add("X-Modified-By", "G-Earth");
 
-                final String revision = httpRequest.uri().split("/")[2];
+                final String revision = extractRevision(httpRequest.uri());
 
                 try {
                     if (httpRequest.uri().endsWith("/StreamingAssets/Version.txt")) {
@@ -112,6 +112,15 @@ public class GUnityFileServer extends HttpProxyInterceptInitializer
                 }
             }
         });
+    }
+
+    private static String extractRevision(final String uri) {
+        final int webgl = uri.indexOf("/WebGL/");
+        if (webgl <= 0) {
+            return "unknown";
+        }
+        final String prefix = uri.substring(0, webgl);
+        return prefix.substring(prefix.lastIndexOf('/') + 1);
     }
 
     private static boolean isTargetAsset(final String host, final String uri) {

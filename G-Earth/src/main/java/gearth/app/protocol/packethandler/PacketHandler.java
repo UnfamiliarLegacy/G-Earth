@@ -6,6 +6,8 @@ import gearth.app.protocol.TrafficListener;
 import gearth.app.services.extension_handler.ExtensionHandler;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public abstract class PacketHandler {
 
@@ -41,6 +43,32 @@ public abstract class PacketHandler {
                 packetSender.send(message2);
             }
         });
+    }
+
+    /** runs the packet through the extensions and waits up to timeoutMs before giving back the handled message */
+    protected HMessage manipulateSync(HMessage message, long timeoutMs) {
+        notifyListeners(TrafficListener.BEFORE_MODIFICATION, message);
+        notifyListeners(TrafficListener.MODIFICATION, message);
+        final HMessage[] result = { message };
+        final CountDownLatch latch = new CountDownLatch(1);
+        extensionHandler.handle(message, message2 -> {
+            notifyListeners(TrafficListener.AFTER_MODIFICATION, message2);
+            result[0] = message2;
+            latch.countDown();
+        });
+        try {
+            latch.await(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return result[0];
+    }
+
+    /** sends the packet through the extensions without waiting and any change they make is not sent on */
+    protected void manipulateAsync(HMessage message) {
+        notifyListeners(TrafficListener.BEFORE_MODIFICATION, message);
+        notifyListeners(TrafficListener.MODIFICATION, message);
+        extensionHandler.handle(message, message2 -> notifyListeners(TrafficListener.AFTER_MODIFICATION, message2));
     }
 
 }

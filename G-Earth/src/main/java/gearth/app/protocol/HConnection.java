@@ -8,6 +8,7 @@ import gearth.app.protocol.connection.proxy.ProxyProvider;
 import gearth.app.protocol.connection.proxy.ProxyProviderFactory;
 import gearth.app.protocol.connection.proxy.flash.unix.LinuxRawIpFlashProxyProvider;
 import gearth.app.protocol.connection.proxy.nitro.NitroProxyProvider;
+import gearth.app.protocol.connection.proxy.unity.UnityLaunchMode;
 import gearth.app.protocol.connection.proxy.unity.UnityProxyProvider;
 import gearth.app.services.extension_handler.ExtensionHandler;
 import gearth.misc.listenerpattern.Observable;
@@ -74,8 +75,12 @@ public class HConnection {
     }
 
     public void startUnity() {
+        startUnity(UnityLaunchMode.WEB);
+    }
+
+    public void startUnity(UnityLaunchMode mode) {
         HConnection selff = this;
-        proxyProvider = new UnityProxyProvider(proxy -> selff.proxy = proxy, selff::setState, this);
+        proxyProvider = new UnityProxyProvider(proxy -> selff.proxy = proxy, selff::setState, this, mode);
         startMITM();
     }
 

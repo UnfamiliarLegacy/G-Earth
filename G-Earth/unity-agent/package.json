@@ -1,0 +1,19 @@
+{
+  "name": "gearth-unity-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frida agent for the standalone Habbo Unity client",
+  "scripts": {
+    "build": "npm test && frida-compile src/index.ts -o ../src/main/resources/gearth/services/unity_tools/agent.js",
+    "test": "tsc --noEmit && node test/incoming_stream.test.cjs",
+    "watch": "frida-compile src/index.ts -o ../src/main/resources/gearth/services/unity_tools/agent.js -w"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^19.3.0",
+    "frida-compile": "^19.0.5",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "frida-il2cpp-bridge": "^0.13.1"
+  }
+}

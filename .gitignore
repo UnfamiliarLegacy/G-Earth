@@ -28,3 +28,7 @@ Extensions/BlockReplacePackets/.classpath
 *.pem
 *.crt
 *.key
+
+G-Earth/unity-agent/node_modules/
+G-Earth/unity-agent/node/
+G-Earth/src/main/resources/gearth/services/unity_tools/agent.js
